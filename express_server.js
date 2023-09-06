@@ -68,6 +68,11 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = { username: req.cookies["username"]};
+  res.render("registration", templateVars);
+});
+
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   urlDatabase[id] = req.body.longURL;
