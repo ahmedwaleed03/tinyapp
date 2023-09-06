@@ -26,9 +26,9 @@
         <h5 class="card-title">Edit</h5>
         <div class="d-flex justify-content-center">
           <form class="form-inline" action="/urls/<%= id %>  " method="POST">
-            <label for="longURL">New URL:</label>
+            <label for="longURL" class="mr-2">New URL:</label>
             <input
-              class="form-control"
+              class="form-control mr-2"
               type="text"
               name="longURL"
               value="<%= longURL %>"

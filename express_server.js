@@ -65,6 +65,11 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect("/");
+});
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
