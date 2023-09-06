@@ -43,7 +43,6 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const { id } = req.params;
-  //const longURL = urlDatabase[req.url.slice(3)];
   const longURL = urlDatabase[id];
   res.redirect(longURL);
 });
@@ -60,12 +59,14 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+app.post("/urls/:id", (req, res) => {
+  const { id } = req.params;
+  urlDatabase[id] = req.body.longURL;
+  res.redirect(`/urls/${id}`);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
