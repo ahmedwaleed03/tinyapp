@@ -42,8 +42,17 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.url.slice(3)];
+  const { id } = req.params;
+  //const longURL = urlDatabase[req.url.slice(3)];
+  const longURL = urlDatabase[id];
   res.redirect(longURL);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  const { id } = req.params;
+  console.log(id);
+  delete urlDatabase[id];
+  res.redirect("/");
 });
 
 app.get("/urls/:id", (req, res) => {
