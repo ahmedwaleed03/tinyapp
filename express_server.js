@@ -105,7 +105,10 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]],};
+  const templateVars = { user: users[req.cookies["user_id"]]};
+  if (req.cookies["user_id"]) {
+    return res.redirect("/urls");
+  }
   res.render("registration", templateVars);
 });
 
@@ -117,7 +120,10 @@ app.post("/urls/:id", (req, res) => {
 
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]],};
-  res.render("login", templateVars);
+  if (req.cookies["user_id"]) {
+    return res.redirect("/urls");
+  }
+  return res.render("login", templateVars);
 });
 
 app.post("/login", (req, res) => {
