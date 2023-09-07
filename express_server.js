@@ -1,7 +1,7 @@
 const cookieSession = require('cookie-session');
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const { findUserByEmail, authenticateUser, urlsForUser } = require("./helpers");
+const { getUserByEmail, authenticateUser, urlsForUser, generateRandomString } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -13,17 +13,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
 
-const generateRandomString = () => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let randomString = '';
-
-  for (let i = 0; i < 6; i++) {
-    randomString += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-
-  return randomString;
-};
-
+// object that contains the urls
 const urlDatabase = {
   "b2xVn2": {
     longURL:"http://www.lighthouselabs.ca",
@@ -35,9 +25,11 @@ const urlDatabase = {
   }
 };
 
+// passwords for the two default accounts
 const pass1 = "purple-monkey-dinosaur";
 const pass2 = "dishwasher-funk";
 
+// object that stores the users
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -51,8 +43,13 @@ const users = {
   },
 };
 
+// routes
 app.get("/", (req, res) => {
-  return res.redirect("/urls");
+  if (!req.session.user_id) {
+    return res.redirect("/login");
+  } else {
+    return res.redirect("/urls");
+  }
 });
 
 app.get("/urls", (req, res) => {
@@ -76,10 +73,10 @@ app.post("/register", (req, res) => {
   const {email, password} = req.body;
   if (email === "" || password === "") {
     res.status(400);
-    return res.redirect("/register");
-  } else if (findUserByEmail(users, email)) {
+    return res.send("Please complete both fields!");
+  } else if (getUserByEmail(users, email)) {
     res.status(400);
-    return res.redirect("/register");
+    return res.send("Email is already registered!");
   }
 
   let newId = generateRandomString();
@@ -178,7 +175,8 @@ app.post("/login", (req, res) => {
 
   const { error, user } = authenticateUser(users, email, password);
   if (error) {
-    return res.status(403);
+    res.status(403);
+    return res.send(error);
   }
 
   req.session.user_id = user.id;

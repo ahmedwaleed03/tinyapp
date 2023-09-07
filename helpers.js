@@ -35,4 +35,15 @@ const urlsForUser = (urls, id) => {
   return result;
 };
 
-module.exports = {getUserByEmail, authenticateUser, urlsForUser};
+const generateRandomString = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let randomString = '';
+
+  for (let i = 0; i < 6; i++) {
+    randomString += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+
+  return randomString;
+};
+
+module.exports = {getUserByEmail, authenticateUser, urlsForUser, generateRandomString};
