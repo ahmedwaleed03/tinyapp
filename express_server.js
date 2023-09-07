@@ -110,7 +110,13 @@ app.get("/u/:id", (req, res) => {
 
 
 app.post("/urls/:id/delete", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    return res.send("Error! You need to be logged in to delete a url!\n");
+  } 
   const { id } = req.params;
+  if (!urlDatabase[id]) {
+    return res.send("Error! URL does not exist!\n");
+  }
   delete urlDatabase[id];
   return res.redirect("/");
 });
@@ -141,7 +147,13 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    return res.send("Error! You need to be logged in to edit a url!\n");
+  }
   const { id } = req.params;
+  if (!urlDatabase[id]) {
+    return res.send("Error! URL does not exist!\n");
+  }
   urlDatabase[id].longURL = req.body.longURL;
   return res.redirect(`/urls/${id}`);
 });
