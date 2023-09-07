@@ -1,4 +1,4 @@
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { findUserByEmail, authenticateUser, urlsForUser } = require("./helpers");
@@ -11,7 +11,7 @@ app.use(cookieSession({
   name: 'user', // what the session is called on the clients browser
   keys: ['one', 'two', 'three'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+}));
 
 const generateRandomString = () => {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -22,12 +22,12 @@ const generateRandomString = () => {
   }
 
   return randomString;
-}
+};
 
 const urlDatabase = {
   "b2xVn2": {
     longURL:"http://www.lighthouselabs.ca",
-    userID: "userRandomID" 
+    userID: "userRandomID"
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
@@ -36,7 +36,7 @@ const urlDatabase = {
 };
 
 const pass1 = "purple-monkey-dinosaur";
-const pass2 = "dishwasher-funk"
+const pass2 = "dishwasher-funk";
 
 const users = {
   userRandomID: {
@@ -56,7 +56,7 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { 
+  const templateVars = {
     urls: urlsForUser(urlDatabase, req.session.user_id),
     user: users[req.session.user_id],
   };
@@ -116,11 +116,10 @@ app.get("/u/:id", (req, res) => {
   return res.redirect(longURL);
 });
 
-
 app.post("/urls/:id/delete", (req, res) => {
   if (!req.session.user_id) {
     return res.send("Error! You need to be logged in to delete a url!\n");
-  } 
+  }
   const { id } = req.params;
   if (!urlDatabase[id]) {
     return res.send("Error! URL does not exist!\n");
@@ -133,9 +132,9 @@ app.get("/urls/:id", (req, res) => {
   if (!req.session.user_id) {
     return res.send("Error! You need to be logged in to view/edit a short url!\n");
   }
-  const templateVars = { 
-    id: req.params.id, 
-    url: urlDatabase[req.params.id], 
+  const templateVars = {
+    id: req.params.id,
+    url: urlDatabase[req.params.id],
     user: users[req.session.user_id],
   };
 

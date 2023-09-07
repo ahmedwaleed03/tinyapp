@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 
-const findUserByEmail = (users, email) => {
+const getUserByEmail = (users, email) => {
   const userList = Object.values(users);
 
   const user = userList.find((user) => email === user.email);
@@ -9,7 +9,7 @@ const findUserByEmail = (users, email) => {
 };
 
 const authenticateUser = (users, email, password) => {
-  const user = findUserByEmail(users, email);
+  const user = getUserByEmail(users, email);
 
   if (!user) {
     return { error: "User doesn't exist", user: undefined };
@@ -33,6 +33,6 @@ const urlsForUser = (urls, id) => {
     }
   }
   return result;
-}
+};
 
-module.exports = {findUserByEmail, authenticateUser, urlsForUser};
+module.exports = {getUserByEmail, authenticateUser, urlsForUser};
