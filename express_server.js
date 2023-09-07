@@ -38,7 +38,7 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.redirect("/urls");
+  return res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
@@ -46,12 +46,15 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user: users[req.cookies["user_id"]],
   };
-  res.render("urls_index", templateVars);
+  return res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]], };
-  res.render("urls_new", templateVars);
+  if (!req.cookies["user_id"]) {
+    return res.redirect("/login");
+  }
+  return res.render("urls_new", templateVars);
 });
 
 app.post("/register", (req, res) => {
@@ -76,23 +79,25 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
+  if (!req.cookies["user_id"]) {
+    return res.send("Error! You need to be logged in to create a short url!\n");
+  }
   let id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
-  res.redirect("/urls/" + id); // Respond with 'Ok' (we will replace this)
+  return res.redirect("/urls/" + id); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:id", (req, res) => {
   const { id } = req.params;
   const longURL = urlDatabase[id];
-  res.redirect(longURL);
+  return res.redirect(longURL);
 });
 
 
 app.post("/urls/:id/delete", (req, res) => {
   const { id } = req.params;
   delete urlDatabase[id];
-  res.redirect("/");
+  return res.redirect("/");
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -101,7 +106,7 @@ app.get("/urls/:id", (req, res) => {
     longURL: urlDatabase[req.params.id], 
     user: users[req.cookies["user_id"]],
   };
-  res.render("urls_show", templateVars);
+  return res.render("urls_show", templateVars);
 });
 
 app.get("/register", (req, res) => {
@@ -109,13 +114,13 @@ app.get("/register", (req, res) => {
   if (req.cookies["user_id"]) {
     return res.redirect("/urls");
   }
-  res.render("registration", templateVars);
+  return res.render("registration", templateVars);
 });
 
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
   urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
+  return res.redirect(`/urls/${id}`);
 });
 
 app.get("/login", (req, res) => {
@@ -140,11 +145,11 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/login");
+  return res.redirect("/login");
 });
 
 app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+  return res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
