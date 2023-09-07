@@ -1,6 +1,6 @@
 const cookieParser = require('cookie-parser')
 const express = require("express");
-const { findUserByEmail, authenticateUser } = require("./helpers");
+const { findUserByEmail, authenticateUser, urlsForUser } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -26,7 +26,7 @@ const urlDatabase = {
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "user2@example.com"
+    userID: "userRandomID"
   }
 };
 
@@ -49,9 +49,10 @@ app.get("/", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const templateVars = { 
-    urls: urlDatabase,
+    urls: urlsForUser(urlDatabase, req.cookies["user_id"]),
     user: users[req.cookies["user_id"]],
   };
+
   return res.render("urls_index", templateVars);
 });
 

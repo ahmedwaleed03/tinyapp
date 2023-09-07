@@ -20,4 +20,16 @@ const authenticateUser = (users, email, password) => {
   return { error: undefined, user };
 };
 
-module.exports = {findUserByEmail, authenticateUser};
+const urlsForUser = (urls, id) => {
+  const keys = Object.keys(urls);
+  const result = {};
+
+  for (let key of keys) {
+    if (urls[key].userID === id) {
+      result[key] = urls[key];
+    }
+  }
+  return result;
+}
+
+module.exports = {findUserByEmail, authenticateUser, urlsForUser};
