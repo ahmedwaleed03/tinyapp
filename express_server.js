@@ -1,5 +1,6 @@
 const cookieParser = require('cookie-parser')
 const express = require("express");
+const { findUserByEmail, authenticateUser } = require("./helpers");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -55,6 +56,14 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/register", (req, res) => {
   const {email, password} = req.body;
+  if (email === "" || password === "") {
+    res.status(400);
+    return res.redirect("/register");
+  } else if (findUserByEmail(users, email)) {
+    res.status(400);
+    return res.redirect("/register");
+  }
+
   let newId = generateRandomString();
   let newUser = {
     id: newId,
@@ -63,7 +72,7 @@ app.post("/register", (req, res) => {
   };
   users[newId] = newUser;
   res.cookie("user_id", newId);
-  res.redirect("/");
+  return res.redirect("/");
 });
 
 app.post("/urls", (req, res) => {
@@ -106,16 +115,20 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${id}`);
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]],};
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect("/");
+  res.cookie("user_Id", user.id);
+  return res.redirect("/");
 });
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect("/");
+  res.redirect("/login");
 });
-
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
