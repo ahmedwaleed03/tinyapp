@@ -121,7 +121,14 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("user_Id", user.id);
+  const { email, password } = req.body;
+
+  const { error, user } = authenticateUser(users, email, password);
+  if (error) {
+    return res.status(403);
+  }
+
+  res.cookie("user_id", user.id);
   return res.redirect("/");
 });
 
