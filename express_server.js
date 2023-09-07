@@ -20,8 +20,14 @@ const generateRandomString = () => {
 }
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL:"http://www.lighthouselabs.ca",
+    userID: "userRandomID" 
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2@example.com"
+  }
 };
 
 const users = {
@@ -83,13 +89,18 @@ app.post("/urls", (req, res) => {
     return res.send("Error! You need to be logged in to create a short url!\n");
   }
   let id = generateRandomString();
-  urlDatabase[id] = req.body.longURL;
+  let tempURL = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"]
+  };
+
+  urlDatabase[id] = tempURL;
   return res.redirect("/urls/" + id); // Respond with 'Ok' (we will replace this)
 });
 
 app.get("/u/:id", (req, res) => {
   const { id } = req.params;
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
   if (!longURL) {
     return res.send("URL does not exist!\n");
   }
@@ -106,7 +117,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = { 
     id: req.params.id, 
-    longURL: urlDatabase[req.params.id], 
+    url: urlDatabase[req.params.id], 
     user: users[req.cookies["user_id"]],
   };
   return res.render("urls_show", templateVars);
@@ -122,7 +133,7 @@ app.get("/register", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;
   return res.redirect(`/urls/${id}`);
 });
 
