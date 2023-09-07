@@ -1,3 +1,5 @@
+const bcrypt = require("bcryptjs");
+
 const findUserByEmail = (users, email) => {
   const userList = Object.values(users);
 
@@ -13,7 +15,8 @@ const authenticateUser = (users, email, password) => {
     return { error: "User doesn't exist", user: undefined };
   }
 
-  if (user.password !== password) {
+  //if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     return { error: "Password doesn't match", user: undefined };
   }
 
