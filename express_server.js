@@ -26,7 +26,7 @@ const urlDatabase = {
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: "userRandomID"
+    userID: "user2RandomID"
   }
 };
 
@@ -116,11 +116,19 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  if (!req.cookies["user_id"]) {
+    return res.send("Error! You need to be logged in to view/edit a short url!\n");
+  }
   const templateVars = { 
     id: req.params.id, 
     url: urlDatabase[req.params.id], 
     user: users[req.cookies["user_id"]],
   };
+
+  if (req.cookies["user_id"] !== templateVars.url.userID) {
+    return res.send("Error! This url does not belong to you!\n");
+  }
+
   return res.render("urls_show", templateVars);
 });
 
