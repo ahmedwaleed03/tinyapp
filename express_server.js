@@ -90,6 +90,9 @@ app.post("/urls", (req, res) => {
 app.get("/u/:id", (req, res) => {
   const { id } = req.params;
   const longURL = urlDatabase[id];
+  if (!longURL) {
+    return res.send("URL does not exist!\n");
+  }
   return res.redirect(longURL);
 });
 
