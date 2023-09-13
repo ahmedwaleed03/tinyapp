@@ -2,6 +2,7 @@ const cookieSession = require('cookie-session');
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { getUserByEmail, authenticateUser, urlsForUser, generateRandomString } = require("./helpers");
+const { users, urlDatabase } = require("./data");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -12,36 +13,6 @@ app.use(cookieSession({
   keys: ['one', 'two', 'three'],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
-
-// object that contains the urls
-const urlDatabase = {
-  "b2xVn2": {
-    longURL:"http://www.lighthouselabs.ca",
-    userID: "userRandomID"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "user2RandomID"
-  }
-};
-
-// passwords for the two default accounts
-const pass1 = "purple-monkey-dinosaur";
-const pass2 = "dishwasher-funk";
-
-// object that stores the users
-const users = {
-  userRandomID: {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: bcrypt.hashSync(pass1, 10)
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: bcrypt.hashSync(pass2, 10)
-  },
-};
 
 // routes
 app.get("/", (req, res) => {
@@ -101,7 +72,7 @@ app.post("/urls", (req, res) => {
   };
 
   urlDatabase[id] = tempURL;
-  return res.redirect("/urls/" + id); // Respond with 'Ok' (we will replace this)
+  return res.redirect("/urls/" + id);
 });
 
 app.get("/u/:id", (req, res) => {
@@ -159,7 +130,7 @@ app.post("/urls/:id", (req, res) => {
     return res.send("Error! URL does not exist!\n");
   }
   urlDatabase[id].longURL = req.body.longURL;
-  return res.redirect(`/urls/${id}`);
+  return res.redirect(`/urls`);
 });
 
 app.get("/login", (req, res) => {
@@ -186,10 +157,6 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   req.session = null;
   return res.redirect("/login");
-});
-
-app.get("/urls.json", (req, res) => {
-  return res.json(urlDatabase);
 });
 
 app.listen(PORT, () => {
