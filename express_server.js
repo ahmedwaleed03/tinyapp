@@ -32,35 +32,6 @@ app.get("/urls", (req, res) => {
   return res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.session.user_id], };
-  if (!req.session.user_id) {
-    return res.redirect("/login");
-  }
-  return res.render("urls_new", templateVars);
-});
-
-app.post("/register", (req, res) => {
-  const {email, password} = req.body;
-  if (email === "" || password === "") {
-    res.status(400);
-    return res.send("Please complete both fields!");
-  } else if (getUserByEmail(users, email)) {
-    res.status(400);
-    return res.send("Email is already registered!");
-  }
-
-  let newId = generateRandomString();
-  let newUser = {
-    id: newId,
-    email,
-    password : bcrypt.hashSync(password, 10)
-  };
-  users[newId] = newUser;
-  req.session.user_id = newId;
-  return res.redirect("/");
-});
-
 app.post("/urls", (req, res) => {
   if (!req.session.user_id) {
     return res.send("Error! You need to be logged in to create a short url!\n");
@@ -73,6 +44,43 @@ app.post("/urls", (req, res) => {
 
   urlDatabase[id] = tempURL;
   return res.redirect("/urls/" + id);
+});
+
+app.get("/urls/new", (req, res) => {
+  const templateVars = { user: users[req.session.user_id], };
+  if (!req.session.user_id) {
+    return res.redirect("/login");
+  }
+  return res.render("urls_new", templateVars);
+});
+
+app.get("/urls/:id", (req, res) => {
+  if (!req.session.user_id) {
+    return res.send("Error! You need to be logged in to view/edit a short url!\n");
+  }
+  const templateVars = {
+    id: req.params.id,
+    url: urlDatabase[req.params.id],
+    user: users[req.session.user_id],
+  };
+
+  if (req.session.user_id !== templateVars.url.userID) {
+    return res.send("Error! This url does not belong to you!\n");
+  }
+
+  return res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id", (req, res) => {
+  if (!req.session.user_id) {
+    return res.send("Error! You need to be logged in to edit a url!\n");
+  }
+  const { id } = req.params;
+  if (!urlDatabase[id]) {
+    return res.send("Error! URL does not exist!\n");
+  }
+  urlDatabase[id].longURL = req.body.longURL;
+  return res.redirect(`/urls`);
 });
 
 app.get("/u/:id", (req, res) => {
@@ -96,23 +104,6 @@ app.post("/urls/:id/delete", (req, res) => {
   return res.redirect("/");
 });
 
-app.get("/urls/:id", (req, res) => {
-  if (!req.session.user_id) {
-    return res.send("Error! You need to be logged in to view/edit a short url!\n");
-  }
-  const templateVars = {
-    id: req.params.id,
-    url: urlDatabase[req.params.id],
-    user: users[req.session.user_id],
-  };
-
-  if (req.session.user_id !== templateVars.url.userID) {
-    return res.send("Error! This url does not belong to you!\n");
-  }
-
-  return res.render("urls_show", templateVars);
-});
-
 app.get("/register", (req, res) => {
   const templateVars = { user: users[req.session.user_id]};
   if (req.session.user_id) {
@@ -121,16 +112,25 @@ app.get("/register", (req, res) => {
   return res.render("registration", templateVars);
 });
 
-app.post("/urls/:id", (req, res) => {
-  if (!req.session.user_id) {
-    return res.send("Error! You need to be logged in to edit a url!\n");
+app.post("/register", (req, res) => {
+  const {email, password} = req.body;
+  if (email === "" || password === "") {
+    res.status(400);
+    return res.send("Please complete both fields!");
+  } else if (getUserByEmail(users, email)) {
+    res.status(400);
+    return res.send("Email is already registered!");
   }
-  const { id } = req.params;
-  if (!urlDatabase[id]) {
-    return res.send("Error! URL does not exist!\n");
-  }
-  urlDatabase[id].longURL = req.body.longURL;
-  return res.redirect(`/urls`);
+
+  let newId = generateRandomString();
+  let newUser = {
+    id: newId,
+    email,
+    password : bcrypt.hashSync(password, 10)
+  };
+  users[newId] = newUser;
+  req.session.user_id = newId;
+  return res.redirect("/");
 });
 
 app.get("/login", (req, res) => {
