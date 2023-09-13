@@ -16,7 +16,10 @@ app.use(cookieSession({
 
 // routes
 app.get("/", (req, res) => {
-  if (req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+
+  if (user) {
     return res.redirect("/urls");
   }
   return res.redirect("/login");
@@ -32,13 +35,16 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  if (!req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  if (!user) {
     return res.send("Error! You need to be logged in to create a short url!\n");
   }
   let id = generateRandomString();
+  // create new url and store un url database
   let tempURL = {
     longURL: req.body.longURL,
-    userID: req.session.user_id
+    userID: user_id
   };
 
   urlDatabase[id] = tempURL;
@@ -46,15 +52,23 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.session.user_id], };
-  if (!req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  
+  if (!user) {
     return res.redirect("/login");
   }
+
+  const templateVars = { user };
+
   return res.render("urls_new", templateVars);
 });
-
+ 
 app.get("/urls/:id", (req, res) => {
-  if (!req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  
+  if (!user) {
     return res.send("Error! You need to be logged in to view/edit a short url!\n");
   }
   if (checkUrlId(urlDatabase, req.params.id) === false) {
@@ -64,10 +78,10 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     url: urlDatabase[req.params.id],
-    user: users[req.session.user_id],
+    user
   };
-
-  if (req.session.user_id !== templateVars.url.userID) {
+  
+  if (user_id !== templateVars.url.userID) {
     return res.send("Error! This URL does not belong to you!\n");
   }
 
@@ -75,7 +89,10 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
-  if (!req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+
+  if (!user) {
     return res.send("Error! You need to be logged in to edit a url!\n");
   }
   const { id } = req.params;
@@ -83,12 +100,12 @@ app.post("/urls/:id", (req, res) => {
     return res.send("Error! URL does not exist!\n");
   }
 
-  if (userURL(urlDatabase[id], req.session.user_id)) {
+  if (userURL(urlDatabase[id], user_id)) {
     urlDatabase[id].longURL = req.body.longURL;
   } else {
     return res.send("This URL does not belong to you!")
   }
-  return res.redirect(`/urls`);
+  return res.redirect('/urls');
 });
 
 app.get("/u/:id", (req, res) => {
@@ -101,7 +118,10 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  if (!req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+
+  if (!user) {
     return res.send("Error! You need to be logged in to delete a url!\n");
   }
   const { id } = req.params;
@@ -109,20 +129,24 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.send("Error! URL does not exist!\n");
   }
 
-  if (userURL(urlDatabase[id], req.session.user_id)) {
+  if (userURL(urlDatabase[id], user_id)) {
     delete urlDatabase[id];
   } else {
     return res.send("This URL does not belong to you!");
   }
-  
+
   return res.redirect("/");
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.session.user_id]};
-  if (req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+
+  if (user) {
     return res.redirect("/urls");
   }
+
+  const templateVars = { user : user_id };
   return res.render("registration", templateVars);
 });
 
@@ -137,6 +161,8 @@ app.post("/register", (req, res) => {
   }
 
   let newId = generateRandomString();
+
+  // craete a new user and save in users database
   let newUser = {
     id: newId,
     email,
@@ -148,10 +174,12 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = { user: users[req.session.user_id],};
-  if (req.session.user_id) {
+  const user_id = req.session.user_id;
+  const user = users[user_id];
+  if (user) {
     return res.redirect("/urls");
   }
+  const templateVars = { user: user_id };
   return res.render("login", templateVars);
 });
 
