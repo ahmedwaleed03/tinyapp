@@ -12,12 +12,11 @@ const authenticateUser = (users, email, password) => {
   const user = getUserByEmail(users, email);
 
   if (!user) {
-    return { error: "User doesn't exist", user: undefined };
+    return { error: "User doesn't exist\n", user: undefined };
   }
 
-  //if (user.password !== password) {
   if (!bcrypt.compareSync(password, user.password)) {
-    return { error: "Password doesn't match", user: undefined };
+    return { error: "Password doesn't match\n", user: undefined };
   }
 
   return { error: undefined, user };
@@ -46,4 +45,18 @@ const generateRandomString = () => {
   return randomString;
 };
 
-module.exports = {getUserByEmail, authenticateUser, urlsForUser, generateRandomString};
+const checkUrlId = (urls, id) => {
+  for (let url in urls) {
+    if (url === id) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const userURL = (url, userID) => {
+  return url.userID === userID;
+};
+
+module.exports = {getUserByEmail, authenticateUser, urlsForUser, generateRandomString, checkUrlId, userURL};

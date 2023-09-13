@@ -1,7 +1,7 @@
 const cookieSession = require('cookie-session');
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const { getUserByEmail, authenticateUser, urlsForUser, generateRandomString } = require("./helpers");
+const { getUserByEmail, authenticateUser, urlsForUser, generateRandomString, checkUrlId, userURL } = require("./helpers");
 const { users, urlDatabase } = require("./data");
 const app = express();
 const PORT = 8080; // default port 8080
@@ -18,9 +18,8 @@ app.use(cookieSession({
 app.get("/", (req, res) => {
   if (req.session.user_id) {
     return res.redirect("/urls");
-  } else {
-    return res.redirect("/login");
   }
+  return res.redirect("/login");
 });
 
 app.get("/urls", (req, res) => {
@@ -58,6 +57,10 @@ app.get("/urls/:id", (req, res) => {
   if (!req.session.user_id) {
     return res.send("Error! You need to be logged in to view/edit a short url!\n");
   }
+  if (checkUrlId(urlDatabase, req.params.id) === false) {
+    return res.send("This URL does not exist!\n");
+  }
+
   const templateVars = {
     id: req.params.id,
     url: urlDatabase[req.params.id],
@@ -65,7 +68,7 @@ app.get("/urls/:id", (req, res) => {
   };
 
   if (req.session.user_id !== templateVars.url.userID) {
-    return res.send("Error! This url does not belong to you!\n");
+    return res.send("Error! This URL does not belong to you!\n");
   }
 
   return res.render("urls_show", templateVars);
@@ -79,16 +82,21 @@ app.post("/urls/:id", (req, res) => {
   if (!urlDatabase[id]) {
     return res.send("Error! URL does not exist!\n");
   }
-  urlDatabase[id].longURL = req.body.longURL;
+
+  if (userURL(urlDatabase[id], req.session.user_id)) {
+    urlDatabase[id].longURL = req.body.longURL;
+  } else {
+    return res.send("This URL does not belong to you!")
+  }
   return res.redirect(`/urls`);
 });
 
 app.get("/u/:id", (req, res) => {
   const { id } = req.params;
-  const longURL = urlDatabase[id].longURL;
-  if (!longURL) {
-    return res.send("URL does not exist!\n");
+  if (!checkUrlId(urlDatabase, id)) {
+    return res.send("This URL does not exist!\n");
   }
+  const longURL = urlDatabase[id].longURL;
   return res.redirect(longURL);
 });
 
@@ -100,7 +108,13 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!urlDatabase[id]) {
     return res.send("Error! URL does not exist!\n");
   }
-  delete urlDatabase[id];
+
+  if (userURL(urlDatabase[id], req.session.user_id)) {
+    delete urlDatabase[id];
+  } else {
+    return res.send("This URL does not belong to you!");
+  }
+  
   return res.redirect("/");
 });
 
