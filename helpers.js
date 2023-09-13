@@ -25,14 +25,14 @@ const authenticateUser = (users, email, password) => {
 };
 
 const urlsForUser = (urls, id) => {
-  const keys = Object.keys(urls);
-  const result = {};
-
-  for (let key of keys) {
-    if (urls[key].userID === id) {
-      result[key] = urls[key];
+  let result = {};
+  
+  for (let url in urls) {
+    if (urls[url].userID === id) {
+      result[url] = urls[url];
     }
   }
+  
   return result;
 };
 
