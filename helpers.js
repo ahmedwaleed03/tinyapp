@@ -1,11 +1,13 @@
 const bcrypt = require("bcryptjs");
 
 const getUserByEmail = (users, email) => {
-  const userList = Object.values(users);
-
-  const user = userList.find((user) => email === user.email);
-
-  return user;
+  let tempUser = undefined;
+  for (let user in users) {
+    if (users[user].email === email) {
+      tempUser = users[user];
+    }
+  }
+  return tempUser;
 };
 
 const authenticateUser = (users, email, password) => {
